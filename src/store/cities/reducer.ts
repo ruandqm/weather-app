@@ -1,5 +1,5 @@
 const CITIES_INITIAL_STATE = {
-    cities: []
+    cities: [],
 }
 
 const citiesReducer = (state = CITIES_INITIAL_STATE, action: any) => {

@@ -5,10 +5,13 @@ import { WeatherCard } from './components/WeatherCard/WeatherCard'
 import store from './store'
 import './App.scss'
 import { addCity } from './store/cities/actions'
+import { DailyWeatherModal } from './components/DailyWeatherModal/DailyWeatherModal'
+import useMoment from './hooks/useMoment'
 
 const App = () => {
   const [search, setSearch] = useState('')
-  const [weather, setWeather] = useState([{}])
+  const [weather, setWeather] = useState<iDailyWeather>({})
+  const [modalIsOpen, setModalIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   const citiesReducer = useSelector((state: any) => state.cities)
@@ -35,32 +38,45 @@ const App = () => {
   }
 
   const getWeather = async (lat: number, lon: number) => {
-    console.log('api')
     const response = await axios.get(`http://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&lang=pt_br&units=metric&appid=${import.meta.env.VITE_WEATHER_KEY}`)
-    let actIndex = 0
     let weatherArr = []
+    let dailyWeather: iDailyWeather = {}
+
     for (let i = 0; i < response.data.list.length; i++) {
-      if (i == actIndex) {
-        const weatherData = {
-          date: response.data.list[i].dt_txt.substring(0, 10),
-          temp_max: parseInt(response.data.list[i].main.temp_max),
-          temp_min: parseInt(response.data.list[i].main.temp_min),
-          main: response.data.list[i].weather[0].main,
-        }
-        weatherArr.push(weatherData)
+      const weatherData: iWeatherData = {
+        date: response.data.list[i].dt_txt,
+        temp_max: parseInt(response.data.list[i].main.temp_max),
+        temp_min: parseInt(response.data.list[i].main.temp_min),
+        main: response.data.list[i].weather[0].main,
+        icon: response.data.list[i].weather[0].icon,
       }
-      i == actIndex ? actIndex += 8 : null
+      weatherArr.push(weatherData)
     }
+
+    for (let i = 0; i < weatherArr.length; i++) {
+      const date = useMoment(weatherArr[i].date, 'DD/MM/YYYY')
+      if (!dailyWeather[date]) {
+        dailyWeather[date] = []
+      }
+      dailyWeather[date].push(weatherArr[i])
+    }
+
     setIsLoading(false)
 
     const cityWeather = {
       city: search,
-      weather: weatherArr
+      weather: dailyWeather
     }
 
     store.dispatch(addCity(cityWeather))
-    console.log(citiesReducer)
-    setWeather(weatherArr)
+    setWeather(dailyWeather)
+  }
+
+  const modalOpen = () => {
+    setModalIsOpen(true)
+  }
+  const modalClose = () => {
+    setModalIsOpen(false)
   }
 
   return (
@@ -81,14 +97,18 @@ const App = () => {
         <h2 className='titleWeather'>Previsão para os próximos 5 dias</h2>
         <div className="infos">
           {isLoading ? <h4>Carregando...</h4> : null}
-          {Object.keys(weather[0]).length != 0 && weather.map((data, index) => {
+          {Object.keys(weather).length != 0 && Object.keys(weather).map((key: string, index) => {
+
             return (
-              <WeatherCard key={index} data={data} />
+              <WeatherCard key={index} data={weather[key][0]} actions={modalOpen} />
             )
           })}
 
         </div>
       </div>
+
+      {modalIsOpen && <DailyWeatherModal data={weather} actions={modalClose} />}
+
     </div>
   );
 };
