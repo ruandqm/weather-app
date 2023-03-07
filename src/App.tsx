@@ -95,6 +95,7 @@ const App = () => {
 
       <div className="weather">
         <h2 className='titleWeather'>Previsão para os próximos 5 dias</h2>
+        <span>Clique em algum dia para obter mais previsões</span>
         <div className="infos">
           {isLoading ? <h4>Carregando...</h4> : null}
           {Object.keys(weather).length != 0 && Object.keys(weather).map((key: string, index) => {
