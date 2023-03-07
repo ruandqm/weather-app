@@ -23,7 +23,7 @@ const App = () => {
   const submitSearchHandler = async () => {
     if (!citiesReducer.cities.some((e: any) => e.city === search)) {
       setIsLoading(true)
-      const response = await axios.get(`http://api.openweathermap.org/geo/1.0/direct?q=${search}&appid=${import.meta.env.VITE_WEATHER_KEY}`)
+      const response = await axios.get(`https://api.openweathermap.org/geo/1.0/direct?q=${search}&appid=${import.meta.env.VITE_WEATHER_KEY}`)
       getWeather(response.data[0].lat, response.data[0].lon)
     } else {
       const actCity = citiesReducer.cities.find((e: any) => e.city === search)
@@ -38,7 +38,7 @@ const App = () => {
   }
 
   const getWeather = async (lat: number, lon: number) => {
-    const response = await axios.get(`http://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&lang=pt_br&units=metric&appid=${import.meta.env.VITE_WEATHER_KEY}`)
+    const response = await axios.get(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&lang=pt_br&units=metric&appid=${import.meta.env.VITE_WEATHER_KEY}`)
     let weatherArr = []
     let dailyWeather: iDailyWeather = {}
 
